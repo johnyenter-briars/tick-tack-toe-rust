@@ -1,5 +1,13 @@
 use rand::seq::SliceRandom;
 use std::io;
+const VALID_CONFS: [(usize, usize, usize); 6]  = [
+    (0, 1, 2),
+    (0, 3, 6),
+    (0, 4, 8),
+    (2, 5, 8),
+    (6, 7, 8),
+    (2, 4, 6),
+];
 
 #[derive(Debug)]
 struct BoardState {
@@ -22,7 +30,7 @@ impl BoardState {
                 s += "\n";
             }
             let mut formatted_string = self.positions[i].to_string().clone();
-            formatted_string.push_str(" ");
+            formatted_string.push(' ');
             s += &formatted_string;
         }
         s
@@ -45,7 +53,7 @@ impl BoardState {
             .choose_multiple(&mut rand::thread_rng(), 1)
             .collect();
 
-        let choice: usize = choice_vec.first().unwrap().clone().clone();
+        let choice: usize = **choice_vec.first().unwrap();
 
         self.positions[choice] = 'O';
     }
@@ -55,24 +63,15 @@ impl BoardState {
     }
 
     fn check_for_winner(&mut self) -> Option<String> {
-        let valid_confs: Vec<(usize, usize, usize)> = vec![
-            (0, 1, 2),
-            (0, 3, 6),
-            (0, 4, 8),
-            (2, 5, 8),
-            (6, 7, 8),
-            (2, 4, 6),
-        ];
-
-        for player in ['X', 'O'].iter() {
-            for conf in valid_confs.iter() {
-                if self.positions[conf.0] == *player
-                    && self.positions[conf.1] == *player
-                    && self.positions[conf.2] == *player
+        for player in ['X', 'O'] {
+            for conf in VALID_CONFS {
+                if self.positions[conf.0] == player
+                    && self.positions[conf.1] == player
+                    && self.positions[conf.2] == player
                 {
                     self.game_going = false;
 
-                    return Some(player.to_string().clone());
+                    return Some(player.to_string());
                 }
             }
         }
@@ -89,7 +88,7 @@ fn main() {
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
                 println!("\n---------\n");
-                main_board.player_moves(input.replace("\n", "").parse::<usize>().unwrap());
+                main_board.player_moves(input.replace('\n', "").parse::<usize>().unwrap());
                 main_board.ai_moves();
                 println!("{}", main_board.get_format());
                 println!("\n---------\n");
